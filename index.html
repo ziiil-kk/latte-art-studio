@@ -1,0 +1,1922 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#e8d3a4">
+  <title>奶泡小馆 · Latte Art Studio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23e9a382'/%3E%3Cpath d='M17 25h25v14c0 8-5 12-12 12S17 47 17 39V25Z' fill='%23fff6df' stroke='%234b2d22' stroke-width='3'/%3E%3Cpath d='M42 29h4c8 0 8 12 0 12h-4' fill='none' stroke='%234b2d22' stroke-width='3'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --ink: #4b2d22;
+      --ink-soft: #74503e;
+      --cream: #fff6df;
+      --paper: #f9eac8;
+      --butter: #efd798;
+      --peach: #e9a382;
+      --rose: #d97e7c;
+      --sage: #9eaa80;
+      --coffee: #6b3925;
+      --line: #5f3c2e;
+      --shadow: rgba(91, 53, 36, .2);
+      --display: "STKaiti", "KaiTi", "Hiragino Sans GB", "PingFang SC", sans-serif;
+      --body: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --mono: "SFMono-Regular", "Menlo", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: #e8d3a4;
+      touch-action: manipulation;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+      padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+      color: var(--ink);
+      font-family: var(--body);
+      background-color: #e9d6ac;
+      background-image:
+        linear-gradient(90deg, rgba(118, 76, 49, .055) 50%, transparent 50%),
+        linear-gradient(rgba(118, 76, 49, .055) 50%, transparent 50%);
+      background-size: 42px 42px;
+      overflow-x: hidden;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus,
+    input:focus,
+    a:focus,
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--rose);
+      outline-offset: 3px;
+    }
+
+    .festoon {
+      position: absolute;
+      top: -10px;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .festoon::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: -3%;
+      width: 106%;
+      height: 36px;
+      border-bottom: 2px solid rgba(92, 56, 42, .42);
+      border-radius: 50%;
+    }
+
+    .festoon i {
+      position: absolute;
+      top: 24px;
+      width: 32px;
+      height: 42px;
+      border-radius: 3px 3px 13px 13px;
+      background: var(--peach);
+      border: 2px solid var(--line);
+      transform-origin: top center;
+      box-shadow: inset 0 -8px rgba(255, 255, 255, .15);
+    }
+
+    .festoon i:nth-child(1) { left: 8%; background: #a9b489; transform: rotate(-5deg); }
+    .festoon i:nth-child(2) { left: 20%; background: #f5d58d; transform: rotate(4deg); }
+    .festoon i:nth-child(3) { left: 33%; background: #e88983; transform: rotate(-3deg); }
+    .festoon i:nth-child(4) { left: 48%; background: #a9b489; transform: rotate(5deg); }
+    .festoon i:nth-child(5) { left: 62%; background: #f5d58d; transform: rotate(-4deg); }
+    .festoon i:nth-child(6) { left: 75%; background: #e88983; transform: rotate(4deg); }
+    .festoon i:nth-child(7) { left: 89%; background: #a9b489; transform: rotate(-5deg); }
+
+    .app {
+      position: relative;
+      width: calc(100% - 42px);
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 30px 0 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 19px;
+      padding: 14px 17px 13px 18px;
+      border: 2px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255, 247, 226, .88);
+      box-shadow: 0 5px 0 rgba(99, 61, 44, .13);
+    }
+
+    .topbar > * + * {
+      margin-left: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand > * + * {
+      margin-left: 13px;
+    }
+
+    .brand-mark {
+      display: grid;
+      flex: 0 0 auto;
+      width: 52px;
+      height: 52px;
+      place-items: center;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: var(--peach);
+      box-shadow: inset 0 0 0 4px #fbdfaa;
+    }
+
+    .brand-mark svg {
+      width: 33px;
+      height: 33px;
+      overflow: visible;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 34px;
+      font-weight: 400;
+      line-height: .95;
+      letter-spacing: 1px;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+    }
+
+    .top-meta {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .top-meta > * + * {
+      margin-left: 11px;
+    }
+
+    .open-sign {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1.5px dashed rgba(91, 57, 43, .55);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .open-sign > * + * {
+      margin-left: 8px;
+    }
+
+    .open-dot {
+      width: 8px;
+      height: 8px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: var(--sage);
+      box-shadow: 0 0 0 3px rgba(158, 170, 128, .2);
+    }
+
+    .sound-button {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      place-items: center;
+      border: 1.5px solid var(--line);
+      border-radius: 50%;
+      background: var(--cream);
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+
+    .sound-button:hover {
+      transform: rotate(-5deg) scale(1.04);
+      background: #fffdf1;
+    }
+
+    .sound-button svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: minmax(190px, .72fr) minmax(420px, 1.62fr) minmax(220px, .76fr);
+      grid-template-areas: "left cup right";
+      grid-gap: 17px;
+      align-items: stretch;
+    }
+
+    .side {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+    }
+
+    .side > * + * {
+      margin-top: 16px;
+    }
+
+    .side-left {
+      grid-area: left;
+    }
+
+    .side-right {
+      grid-area: right;
+    }
+
+    .paper-card {
+      position: relative;
+      padding: 19px 16px;
+      border: 2px solid var(--line);
+      border-radius: 15px;
+      background: var(--cream);
+      box-shadow: 5px 6px 0 var(--shadow);
+    }
+
+    .paper-card::after {
+      content: "";
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      bottom: 5px;
+      left: 5px;
+      border: 1px solid rgba(99, 61, 44, .12);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    .section-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .section-kicker > * + * {
+      margin-left: 10px;
+    }
+
+    .section-kicker .stamp {
+      display: inline-grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1.5px solid var(--line);
+      border-radius: 50%;
+      background: #f3ca89;
+      font-size: 9px;
+      letter-spacing: 0;
+      transform: rotate(8deg);
+    }
+
+    .card-title {
+      margin: 0 0 7px;
+      font-family: var(--display);
+      font-size: 22px;
+      font-weight: 400;
+      line-height: 1.2;
+    }
+
+    .card-copy {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .divider {
+      height: 1px;
+      margin: 16px 0;
+      border: 0;
+      background-image: linear-gradient(90deg, var(--ink-soft) 45%, transparent 45%);
+      background-size: 9px 1px;
+      opacity: .35;
+    }
+
+    .pattern-label,
+    .tool-label {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .patterns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-gap: 8px;
+    }
+
+    .pattern {
+      min-width: 0;
+      padding: 8px 5px 7px;
+      border: 1.5px solid rgba(79, 48, 36, .48);
+      border-radius: 10px;
+      background: #f7e6bf;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease, color .15s ease;
+    }
+
+    .pattern:hover {
+      transform: translateY(-2px);
+      background: #fff4d7;
+    }
+
+    .pattern[aria-pressed="true"] {
+      color: var(--cream);
+      background: var(--coffee);
+      border-color: var(--coffee);
+    }
+
+    .pattern svg {
+      display: block;
+      width: 38px;
+      height: 24px;
+      margin: 0 auto 3px;
+    }
+
+    .pattern span {
+      display: block;
+      font-size: 10px;
+    }
+
+    .tips {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: tip;
+    }
+
+    .tips li {
+      position: relative;
+      min-height: 25px;
+      margin: 0 0 12px;
+      padding: 0 0 0 31px;
+      color: var(--ink-soft);
+      font-size: 11px;
+      line-height: 1.65;
+      counter-increment: tip;
+    }
+
+    .tips li:last-child {
+      margin-bottom: 0;
+    }
+
+    .tips li::before {
+      content: "0" counter(tip);
+      position: absolute;
+      top: 1px;
+      left: 0;
+      color: var(--coffee);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 500;
+      line-height: 20px;
+      text-align: center;
+      width: 22px;
+      height: 22px;
+      border: 1px solid rgba(99, 61, 44, .3);
+      border-radius: 50%;
+    }
+
+    .shop-note {
+      overflow: hidden;
+      flex: 0 0 auto;
+      padding: 16px;
+      border: 2px solid var(--line);
+      border-radius: 100px 100px 16px 16px;
+      color: var(--cream);
+      text-align: center;
+      background: var(--coffee);
+      box-shadow: 5px 6px 0 rgba(91, 53, 36, .16);
+    }
+
+    .shop-note .tiny-label {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 2px;
+      opacity: .68;
+    }
+
+    .shop-note p {
+      margin: 6px 0 0;
+      font-family: var(--display);
+      font-size: 17px;
+      line-height: 1.3;
+    }
+
+    .cup-area {
+      position: relative;
+      display: flex;
+      grid-area: cup;
+      min-width: 0;
+      min-height: 650px;
+      flex-direction: column;
+      overflow: hidden;
+      border: 2px solid var(--line);
+      border-radius: 26px;
+      background:
+        linear-gradient(rgba(255, 251, 233, .48), rgba(255, 251, 233, .58)),
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(114, 74, 49, .11) 31px 32px),
+        repeating-linear-gradient(90deg, transparent 0 31px, rgba(114, 74, 49, .11) 31px 32px),
+        #f5e4bd;
+      box-shadow: 7px 8px 0 var(--shadow);
+    }
+
+    .cup-area::before {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      top: 60px;
+      right: 7%;
+      width: 33%;
+      height: 48%;
+      border: 1px solid rgba(93, 59, 40, .16);
+      border-radius: 50% 50% 7px 7px;
+      background: rgba(255, 251, 237, .25);
+      transform: rotate(1.5deg);
+      pointer-events: none;
+    }
+
+    .cup-area::after {
+      content: "milk  ·  coffee  ·  a little daydream";
+      position: absolute;
+      z-index: 0;
+      right: 21px;
+      bottom: 20px;
+      color: rgba(91, 57, 42, .31);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 1.45px;
+      writing-mode: vertical-rl;
+      pointer-events: none;
+    }
+
+    .stage-top {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 17px 0;
+    }
+
+    .stage-top > * + * {
+      margin-left: 12px;
+    }
+
+    .coffee-number {
+      display: flex;
+      align-items: center;
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .coffee-number > * + * {
+      margin-left: 8px;
+    }
+
+    .coffee-number b {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1.5px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      background: #f2c879;
+      font-size: 9px;
+    }
+
+    .stage-badge {
+      padding: 6px 9px;
+      border: 1px dashed rgba(91, 57, 42, .48);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      transform: rotate(1deg);
+    }
+
+    .scene {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      width: 100%;
+      max-width: 580px;
+      min-height: 535px;
+      margin: 4px auto 0;
+      place-items: center;
+      flex: 1;
+      padding: 8px 26px 28px;
+    }
+
+    .steam {
+      position: absolute;
+      z-index: 0;
+      top: 32px;
+      left: 50%;
+      width: 230px;
+      height: 115px;
+      transform: translateX(-50%);
+      opacity: .36;
+      pointer-events: none;
+    }
+
+    .steam span {
+      position: absolute;
+      bottom: 0;
+      width: 34px;
+      height: 92px;
+      border-left: 2px solid var(--ink-soft);
+      border-radius: 50%;
+      animation: steam 4.8s ease-in-out infinite;
+    }
+
+    .steam span:nth-child(1) {
+      left: 51px;
+      height: 74px;
+      animation-delay: -.8s;
+    }
+
+    .steam span:nth-child(2) {
+      left: 105px;
+      animation-delay: -2.2s;
+    }
+
+    .steam span:nth-child(3) {
+      left: 161px;
+      height: 82px;
+      animation-delay: -3.4s;
+    }
+
+    @keyframes steam {
+      0%, 100% { transform: translateY(6px) rotate(-3deg) scaleX(.9); opacity: .16; }
+      40% { transform: translateY(-8px) rotate(5deg) scaleX(1.12); opacity: .54; }
+      75% { transform: translateY(-18px) rotate(-1deg) scaleX(1.28); opacity: .08; }
+    }
+
+    .cup-construction {
+      position: relative;
+      width: 80%;
+      max-width: 425px;
+      height: 425px;
+      isolation: isolate;
+      filter: drop-shadow(0 24px 15px rgba(78, 44, 28, .22));
+    }
+
+    .cup-construction::before {
+      content: "";
+      position: absolute;
+      z-index: -3;
+      left: 50%;
+      top: 50%;
+      width: 126%;
+      height: 119%;
+      border: 2px solid rgba(91, 57, 42, .67);
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse at 34% 27%, rgba(255, 255, 255, .8) 0 7%, transparent 28%),
+        radial-gradient(ellipse at 63% 73%, rgba(131, 84, 54, .15), transparent 56%),
+        #f4e4c6;
+      box-shadow:
+        inset -12px -10px 20px rgba(113, 69, 43, .13),
+        inset 9px 8px 15px rgba(255, 255, 255, .8);
+      transform: translate(-50%, -49%);
+    }
+
+    .handle {
+      position: absolute;
+      z-index: -2;
+      top: 32%;
+      right: -13%;
+      width: 29%;
+      height: 34%;
+      border: 22px solid #f6e8cf;
+      border-left-width: 9px;
+      border-radius: 48%;
+      filter: drop-shadow(2px 4px 0 rgba(91, 57, 42, .5)) drop-shadow(0 10px 9px rgba(91, 57, 42, .14));
+    }
+
+    .handle::after {
+      content: "";
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      bottom: -12px;
+      left: -12px;
+      border: 1.5px solid rgba(91, 57, 42, .46);
+      border-radius: 45%;
+      pointer-events: none;
+    }
+
+    .cup-rim {
+      position: absolute;
+      z-index: 4;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      border: 13px solid #fbf0db;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 48% 48%, transparent 0 89%, rgba(84, 43, 25, .19) 89.3%, rgba(84, 43, 25, .34) 90%, transparent 90.6%),
+        radial-gradient(circle at 38% 31%, rgba(255, 255, 255, .67) 0 8%, transparent 37%);
+      box-shadow:
+        inset 0 0 0 3px rgba(255, 255, 255, .72),
+        inset 0 0 0 7px rgba(104, 60, 35, .15),
+        0 2px 0 #d9bd91,
+        0 11px 20px rgba(74, 40, 25, .17);
+      transform: translateZ(0);
+      pointer-events: none;
+    }
+
+    .coffee-surface {
+      position: absolute;
+      z-index: 2;
+      top: 7.5%;
+      right: 7.5%;
+      bottom: 7.5%;
+      left: 7.5%;
+      overflow: hidden;
+      border-radius: 50%;
+      background: #72472f;
+      transform: translateZ(0);
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='32' viewBox='0 0 25 32'%3E%3Cpath d='M3 4l15 11-7 2-4 9z' fill='%23fff8e4' stroke='%23603a27' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 3 4, crosshair;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .coffee-surface canvas {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    #coffeeCanvas {
+      z-index: 0;
+    }
+
+    #guideCanvas {
+      z-index: 1;
+      opacity: .85;
+      transition: opacity .25s ease;
+    }
+
+    #milkCanvas {
+      z-index: 2;
+    }
+
+    .surface-glint {
+      position: absolute;
+      z-index: 3;
+      left: 13%;
+      top: 10%;
+      width: 43%;
+      height: 22%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(255, 237, 207, .13), transparent 69%);
+      transform: rotate(-22deg);
+      pointer-events: none;
+    }
+
+    .surface-shadow {
+      position: absolute;
+      z-index: 3;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      border-radius: 50%;
+      box-shadow:
+        inset 13px 16px 27px rgba(255, 222, 175, .1),
+        inset -17px -18px 33px rgba(43, 21, 13, .28);
+      pointer-events: none;
+    }
+
+    .draw-hint {
+      position: absolute;
+      z-index: 8;
+      top: 19%;
+      right: 2%;
+      display: flex;
+      align-items: center;
+      max-width: 139px;
+      padding: 9px 11px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px 12px 12px 3px;
+      color: var(--ink);
+      background: #fff7df;
+      box-shadow: 3px 3px 0 rgba(91, 53, 36, .16);
+      font-size: 10px;
+      line-height: 1.4;
+      pointer-events: none;
+      transform: rotate(2deg);
+      transition: opacity .25s ease, transform .25s ease;
+    }
+
+    .draw-hint > * + * {
+      margin-left: 7px;
+    }
+
+    .draw-hint::after {
+      content: "";
+      position: absolute;
+      left: -10px;
+      bottom: 3px;
+      width: 16px;
+      height: 11px;
+      border-bottom: 1.5px solid var(--line);
+      transform: rotate(34deg);
+    }
+
+    .draw-hint svg {
+      flex: 0 0 auto;
+      width: 19px;
+      height: 19px;
+    }
+
+    .draw-hint.is-hidden {
+      opacity: 0;
+      transform: translateY(5px) rotate(2deg);
+    }
+
+    .snap-feedback {
+      position: absolute;
+      z-index: 9;
+      top: 50%;
+      left: 50%;
+      padding: 8px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      color: var(--cream);
+      background: var(--rose);
+      box-shadow: 3px 3px 0 rgba(91, 53, 36, .2);
+      font-family: var(--display);
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) rotate(-5deg) scale(.65);
+    }
+
+    .snap-feedback.is-show {
+      animation: snap-pop .9s cubic-bezier(.2, .9, .25, 1.25) both;
+    }
+
+    @keyframes snap-pop {
+      0% { opacity: 0; transform: translate(-50%, -42%) rotate(-8deg) scale(.55); }
+      24% { opacity: 1; transform: translate(-50%, -50%) rotate(3deg) scale(1.08); }
+      70% { opacity: 1; transform: translate(-50%, -56%) rotate(-2deg) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -86%) rotate(1deg) scale(.94); }
+    }
+
+    .stage-bottom {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: auto 18px 16px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(91, 57, 42, .32);
+    }
+
+    .stage-bottom > * + * {
+      margin-left: 12px;
+    }
+
+    .current-pattern {
+      display: flex;
+      align-items: center;
+      color: var(--ink-soft);
+      font-size: 10px;
+    }
+
+    .current-pattern > * + * {
+      margin-left: 8px;
+    }
+
+    .current-pattern .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--rose);
+    }
+
+    .stroke-count {
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .tools-card {
+      padding-bottom: 17px;
+    }
+
+    .tool-mode {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 8px;
+      margin-bottom: 17px;
+    }
+
+    .mode-button {
+      display: flex;
+      min-height: 67px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid rgba(79, 48, 36, .42);
+      border-radius: 10px;
+      background: #f7e7c1;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease, color .15s ease;
+    }
+
+    .mode-button > * + * {
+      margin-top: 5px;
+    }
+
+    .mode-button:hover {
+      transform: translateY(-2px);
+      background: #fff2d4;
+    }
+
+    .mode-button[aria-pressed="true"] {
+      color: var(--cream);
+      background: var(--coffee);
+      border-color: var(--coffee);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .1);
+    }
+
+    .mode-button svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .mode-button span {
+      font-size: 10px;
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .range-value {
+      display: inline-flex;
+      min-width: 40px;
+      height: 24px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(91, 57, 42, .34);
+      border-radius: 7px;
+      color: var(--ink-soft);
+      background: #f5dfb4;
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .tool-range {
+      width: 100%;
+      height: 24px;
+      margin: 0 0 13px;
+      accent-color: var(--coffee);
+      cursor: pointer;
+    }
+
+    .auto-snap {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      grid-gap: 9px;
+      margin: 2px 0 16px;
+      padding: 9px 9px;
+      border: 1.5px dashed rgba(91, 57, 42, .42);
+      border-radius: 10px;
+      background: rgba(245, 223, 180, .46);
+      cursor: pointer;
+    }
+
+    .auto-snap:focus-within {
+      outline: 3px solid var(--rose);
+      outline-offset: 3px;
+    }
+
+    .auto-snap input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .snap-switch {
+      position: relative;
+      width: 34px;
+      height: 19px;
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      background: #d8c39b;
+      transition: background .18s ease;
+    }
+
+    .snap-switch::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #fff8e9;
+      box-shadow: 0 1px 2px rgba(75, 45, 34, .3);
+      transition: transform .18s ease;
+    }
+
+    .auto-snap input:checked + .snap-switch {
+      background: var(--sage);
+    }
+
+    .auto-snap input:checked + .snap-switch::after {
+      transform: translateX(15px);
+    }
+
+    .snap-copy strong,
+    .snap-copy small {
+      display: block;
+    }
+
+    .snap-copy strong {
+      margin-bottom: 2px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .snap-copy small {
+      color: var(--ink-soft);
+      font-size: 8px;
+      line-height: 1.45;
+    }
+
+    .snap-state {
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: .5px;
+    }
+
+    .color-label {
+      margin-bottom: 8px;
+    }
+
+    .colors {
+      display: flex;
+      align-items: center;
+      margin-bottom: 17px;
+    }
+
+    .colors > * + * {
+      margin-left: 10px;
+    }
+
+    .swatch {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 1.5px solid rgba(91, 57, 42, .56);
+      border-radius: 50%;
+      background: var(--swatch);
+      cursor: pointer;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .32);
+      transition: transform .15s ease;
+    }
+
+    .swatch:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .swatch[aria-pressed="true"] {
+      outline: 2px solid var(--line);
+      outline-offset: 3px;
+    }
+
+    .swatch[aria-pressed="true"]::after {
+      content: "✓";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 8px;
+    }
+
+    .action-button,
+    .save-button {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--line);
+      border-radius: 9px;
+      background: #f6e6bd;
+      cursor: pointer;
+      font-size: 10px;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .action-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #fff2d3;
+      box-shadow: 0 3px 0 rgba(91, 57, 42, .13);
+    }
+
+    .action-button:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .action-button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    .action-button svg,
+    .save-button svg {
+      width: 15px;
+      height: 15px;
+      margin-right: 7px;
+    }
+
+    .save-button {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 10px;
+      color: var(--cream);
+      background: var(--rose);
+      box-shadow: 0 4px 0 #a85958;
+      font-family: var(--display);
+      font-size: 15px;
+    }
+
+    .save-button:hover {
+      transform: translateY(-2px);
+      background: #de8b88;
+      box-shadow: 0 6px 0 #a85958;
+    }
+
+    .save-button:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #a85958;
+    }
+
+    .micro-note {
+      margin: 12px 1px 0;
+      color: rgba(91, 57, 42, .66);
+      font-size: 9px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .sticker {
+      align-self: center;
+      width: 112px;
+      padding: 10px;
+      border: 1.5px solid rgba(91, 57, 42, .45);
+      border-radius: 50%;
+      color: var(--ink-soft);
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 8px;
+      line-height: 1.55;
+      letter-spacing: .5px;
+      transform: rotate(-7deg);
+      background: rgba(255, 246, 218, .64);
+      -webkit-clip-path: polygon(50% 0%, 61% 13%, 77% 8%, 83% 24%, 100% 32%, 91% 48%, 99% 62%, 83% 71%, 80% 88%, 62% 85%, 49% 100%, 37% 86%, 20% 91%, 16% 74%, 1% 63%, 10% 48%, 1% 33%, 16% 24%, 20% 7%, 38% 13%);
+      clip-path: polygon(50% 0%, 61% 13%, 77% 8%, 83% 24%, 100% 32%, 91% 48%, 99% 62%, 83% 71%, 80% 88%, 62% 85%, 49% 100%, 37% 86%, 20% 91%, 16% 74%, 1% 63%, 10% 48%, 1% 33%, 16% 24%, 20% 7%, 38% 13%);
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 60;
+      left: 50%;
+      bottom: 24px;
+      max-width: calc(100% - 32px);
+      padding: 10px 15px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      color: var(--cream);
+      background: var(--coffee);
+      box-shadow: 3px 4px 0 rgba(91, 57, 42, .22);
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 10px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .modal {
+      position: fixed;
+      z-index: 50;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: grid;
+      padding: 20px;
+      place-items: center;
+      background: rgba(67, 40, 29, .48);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .22s ease, visibility .22s ease;
+    }
+
+    .modal.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      position: relative;
+      width: calc(100% - 8px);
+      max-width: 510px;
+      max-height: 92vh;
+      overflow: auto;
+      padding: 15px 15px 20px;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      background: #f9edd0;
+      box-shadow: 8px 10px 0 rgba(50, 30, 22, .23);
+      transform: translateY(12px) rotate(-.5deg);
+      transition: transform .25s ease;
+    }
+
+    .modal.is-open .modal-card {
+      transform: translateY(0) rotate(-.5deg);
+    }
+
+    .modal-close {
+      position: absolute;
+      z-index: 2;
+      top: 9px;
+      right: 9px;
+      display: grid;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      place-items: center;
+      border: 1.5px solid var(--line);
+      border-radius: 50%;
+      background: var(--cream);
+      cursor: pointer;
+    }
+
+    .modal-close svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .result-frame {
+      position: relative;
+      overflow: hidden;
+      padding: 11px 11px 42px;
+      border: 1.5px solid rgba(91, 57, 42, .35);
+      border-radius: 3px;
+      background: #fffdf6;
+      box-shadow: 2px 4px 12px rgba(70, 38, 24, .15);
+      transform: rotate(1deg);
+    }
+
+    .result-frame img {
+      display: block;
+      width: 100%;
+      border-radius: 2px;
+      background: #e9d1a5;
+    }
+
+    .result-caption {
+      position: absolute;
+      right: 18px;
+      bottom: 10px;
+      left: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .8px;
+    }
+
+    .score-panel {
+      position: relative;
+      margin: 16px 3px 0;
+      padding: 13px 14px 12px;
+      overflow: hidden;
+      border: 1.5px solid rgba(91, 57, 42, .38);
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 94% 10%, rgba(233, 163, 130, .32) 0 30px, transparent 31px),
+        rgba(255, 248, 231, .85);
+    }
+
+    .score-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .score-head > * + * {
+      margin-left: 10px;
+    }
+
+    .score-rating {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+    }
+
+    .score-rating > * + * {
+      margin-left: 9px;
+    }
+
+    .score-stars {
+      color: rgba(91, 57, 42, .2);
+      font-size: 18px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .score-stars .is-filled {
+      color: #e2a645;
+      text-shadow: 0 1px 0 #9d682e;
+    }
+
+    .score-title {
+      font-family: var(--display);
+      font-size: 17px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .score-number {
+      display: flex;
+      align-items: baseline;
+      white-space: nowrap;
+    }
+
+    .score-number > * + * {
+      margin-left: 3px;
+    }
+
+    .score-number strong {
+      font-family: var(--display);
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1;
+      color: var(--rose);
+    }
+
+    .score-number small {
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .score-copy {
+      margin: 8px 0 11px;
+      color: var(--ink-soft);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .score-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-gap: 12px;
+    }
+
+    .score-metric {
+      min-width: 0;
+    }
+
+    .score-metric-head {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .score-metric-head > * + * {
+      margin-left: 4px;
+    }
+
+    .score-track {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 5px;
+      background: rgba(91, 57, 42, .12);
+    }
+
+    .score-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--sage);
+      transition: width .55s cubic-bezier(.2, .8, .25, 1);
+    }
+
+    .score-metric:nth-child(2) .score-fill {
+      background: var(--peach);
+    }
+
+    .score-metric:nth-child(3) .score-fill {
+      background: var(--rose);
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      grid-gap: 9px;
+      margin-top: 18px;
+    }
+
+    .modal-actions button,
+    .modal-actions a {
+      display: inline-flex;
+      min-height: 45px;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--line);
+      border-radius: 9px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .modal-actions .secondary {
+      color: var(--ink);
+      background: #f5e2ba;
+    }
+
+    .modal-actions .primary {
+      color: var(--cream);
+      background: var(--coffee);
+      box-shadow: 0 3px 0 #3e241a;
+    }
+
+    .modal-actions button:disabled {
+      cursor: wait;
+      opacity: .66;
+    }
+
+    .modal-actions svg {
+      width: 16px;
+      height: 16px;
+      margin-right: 6px;
+    }
+
+    @media (max-width: 1020px) {
+      .game-grid {
+        grid-template-columns: minmax(190px, .72fr) minmax(390px, 1.5fr);
+        grid-template-areas:
+          "cup right"
+          "left right";
+      }
+
+      .side-left > * + * {
+        margin-top: 14px;
+      }
+
+      .side-left .paper-card:first-child {
+        min-height: auto;
+      }
+
+      .cup-area {
+        min-height: 610px;
+      }
+    }
+
+    @media (max-width: 790px) {
+      .app {
+        width: calc(100% - 24px);
+        max-width: 640px;
+        padding-top: 24px;
+      }
+
+      .topbar {
+        margin-bottom: 13px;
+      }
+
+      .open-sign {
+        display: none;
+      }
+
+      .game-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+          "cup cup"
+          "left right";
+        align-items: start;
+      }
+
+      .cup-area {
+        min-height: 590px;
+      }
+
+      .scene {
+        min-height: 485px;
+      }
+
+      .sticker {
+        display: none;
+      }
+    }
+
+    @media (max-width: 570px) {
+      .festoon {
+        height: 58px;
+      }
+
+      .festoon i {
+        top: 20px;
+        width: 23px;
+        height: 32px;
+      }
+
+      .app {
+        width: calc(100% - 18px);
+        padding-top: 20px;
+      }
+
+      .topbar {
+        padding: 10px 11px;
+        border-radius: 13px;
+      }
+
+      .brand {
+        margin-left: 0;
+      }
+
+      .brand > * + * {
+        margin-left: 9px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+      }
+
+      .brand-mark svg {
+        width: 27px;
+        height: 27px;
+      }
+
+      .brand h1 {
+        font-size: 27px;
+      }
+
+      .brand p {
+        margin-top: 4px;
+        font-size: 7px;
+        letter-spacing: 1.65px;
+      }
+
+      .sound-button {
+        width: 34px;
+        height: 34px;
+      }
+
+      .game-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "cup"
+          "right"
+          "left";
+      }
+
+      .cup-area {
+        min-height: 0;
+        border-radius: 20px;
+      }
+
+      .stage-top {
+        padding: 11px 12px 0;
+      }
+
+      .scene {
+        min-height: 0;
+        padding: 0 7px 11px;
+      }
+
+      .cup-construction {
+        width: 86%;
+        max-width: 410px;
+        height: 78vw;
+        max-height: 410px;
+      }
+
+      .steam {
+        top: 18px;
+      }
+
+      .draw-hint {
+        top: 24%;
+        right: 0;
+        max-width: 116px;
+        padding: 7px 8px;
+        font-size: 9px;
+      }
+
+      .stage-bottom {
+        margin: 0 13px 12px;
+      }
+
+      .side > * + * {
+        margin-top: 13px;
+      }
+
+      .paper-card {
+        padding: 17px 15px;
+      }
+
+      .side-right .paper-card {
+        height: auto;
+      }
+
+      .side-left .paper-card:first-child {
+        height: auto;
+      }
+
+      .patterns {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .pattern svg {
+        width: 32px;
+      }
+
+      .pattern span {
+        font-size: 9px;
+      }
+
+      .tool-mode {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .mode-button {
+        min-height: 55px;
+        flex-direction: row;
+      }
+
+      .mode-button > * + * {
+        margin-top: 0;
+        margin-left: 5px;
+      }
+
+      .modal {
+        padding: 12px;
+      }
+
+      .modal-card {
+        padding: 12px 12px 16px;
+      }
+
+      .score-title {
+        font-size: 15px;
+      }
+
+      .score-copy {
+        font-size: 9px;
+      }
+
+      .score-metrics {
+        grid-gap: 8px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="festoon" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  </div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path d="M10 17h18v8.5C28 30 24.5 33 20 33s-10-3-10-7.5V17Z" fill="#FFF7DF" stroke="#4B2D22" stroke-width="1.8"/>
+            <path d="M28 20h2.2a4.3 4.3 0 0 1 0 8.6H28" stroke="#4B2D22" stroke-width="1.8"/>
+            <path d="M14 12c-2-2 2-2.8 0-5M20 12c-2-2 2-2.8 0-5" stroke="#4B2D22" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M14.5 21c2.7-2.2 5.5-2 7.4 0-2.4 1.4-4.8 1.3-7.4 0Z" fill="#E9A382"/>
+          </svg>
+        </div>
+        <div>
+          <h1>奶泡小馆</h1>
+          <p>LATTE ART &amp; FRIENDS</p>
+        </div>
+      </div>
+
+      <div class="top-meta">
+        <div class="open-sign"><span class="open-dot"></span> TODAY · OPEN LATE</div>
+        <button class="sound-button" id="soundButton" type="button" aria-label="关闭拉花音效" aria-pressed="true">
+          <svg data-icon="sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+            <path d="M15 9.5a4 4 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="game-grid">
+      <aside class="side side-left" aria-label="拉花灵感">
+        <section class="paper-card">
+          <div class="section-kicker">
+            <span>DAILY SPECIAL</span>
+            <span class="stamp">NO.7</span>
+          </div>
+          <h2 class="card-title">今日灵感单</h2>
+          <p class="card-copy">今天不赶时间，<br>只画一杯喜欢的东西。</p>
+          <hr class="divider">
+          <span class="pattern-label">Pick a little guide</span>
+          <div class="patterns" aria-label="拉花模板">
+            <button class="pattern" type="button" data-pattern="free" aria-pressed="true">
+              <svg viewBox="0 0 48 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 15c3-6 8-8 12-3 4-5 9-3 12 3 2 4-1 7-5 7H11c-4 0-6-3-4-7Z"/><path d="M33 19c4-1 6-3 7-6"/></svg>
+              <span>自由</span>
+            </button>
+            <button class="pattern" type="button" data-pattern="heart" aria-pressed="false">
+              <svg viewBox="0 0 48 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M24 22S10 14 10 8.5C10 5 14 4 17 7c3 3 5 6 7 8 2-2 4-5 7-8 3-3 7-2 7 1.5C38 14 24 22 24 22Z"/></svg>
+              <span>爱心</span>
+            </button>
+            <button class="pattern" type="button" data-pattern="leaf" aria-pressed="false">
+              <svg viewBox="0 0 48 28" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M24 25V4"/><path d="M24 7c-7 1-10 3-12 7 5 1 9 0 12-3M24 11c7 1 10 3 12 7-5 1-9 0-12-3M24 16c-5 1-8 3-10 5 4 1 7 0 10-2M24 19c5 1 8 3 10 5-4 1-7 0-10-2"/></svg>
+              <span>叶片</span>
+            </button>
+            <button class="pattern" type="button" data-pattern="tulip" aria-pressed="false">
+              <svg viewBox="0 0 48 28" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M24 25V18M24 18c-8 0-10-3-10-6 4-2 7 0 10 3 3-3 6-5 10-3 0 3-2 6-10 6ZM24 12c-5 0-6-2-6-4 2-2 4-1 6 1 2-2 4-3 6-1 0 2-1 4-6 4Z"/></svg>
+              <span>郁金香</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="paper-card">
+          <div class="section-kicker"><span>BARISTA'S NOTES</span></div>
+          <ul class="tips">
+            <li>奶泡边缘是软的，慢一点更好看。</li>
+            <li>选模板后用雕花针随手画，松手会吸附成图案。</li>
+            <li>出杯评分会看饱满度、平衡感与图案感。</li>
+          </ul>
+        </section>
+
+        <div class="shop-note">
+          <span class="tiny-label">JUST FOR YOU</span>
+          <p>“每一杯，都有自己的小脾气。”</p>
+        </div>
+      </aside>
+
+      <section class="cup-area" aria-label="拉花操作区">
+        <div class="stage-top">
+          <div class="coffee-number"><b>07</b><span>今天的奶泡练习</span></div>
+          <span class="stage-badge">fresh &amp; warm</span>
+        </div>
+
+        <div class="scene">
+          <div class="steam" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="cup-construction">
+            <div class="handle" aria-hidden="true"></div>
+            <div class="cup-rim" aria-hidden="true"></div>
+            <div class="coffee-surface" id="coffeeSurface" role="application" aria-label="咖啡拉花画布，按住并拖动即可绘制">
+              <canvas id="coffeeCanvas" width="1000" height="1000" aria-hidden="true"></canvas>
+              <canvas id="guideCanvas" width="1000" height="1000" aria-hidden="true"></canvas>
+              <canvas id="milkCanvas" width="1000" height="1000" aria-hidden="true"></canvas>
+              <div class="surface-glint"></div>
+              <div class="surface-shadow"></div>
+            </div>
+            <div class="draw-hint" id="drawHint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m5 4 11 8-5.2 1.2L8 19 5 4Z"/><path d="M14.5 15.5 19 20"/></svg>
+              <span>在这里<br>随手画一笔</span>
+            </div>
+            <div class="snap-feedback" id="snapFeedback" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="stage-bottom">
+          <div class="current-pattern"><span class="dot"></span><span id="patternStatus">自由发挥</span></div>
+          <div class="stroke-count" id="strokeCount">0 笔触</div>
+        </div>
+      </section>
+
+      <aside class="side side-right" aria-label="拉花工具">
+        <section class="paper-card tools-card">
+          <div class="section-kicker">
+            <span>YOUR TOOL KIT</span>
+            <span class="stamp">☻</span>
+          </div>
+          <span class="tool-label">Choose your tool</span>
+          <div class="tool-mode" aria-label="画笔工具">
+            <button class="mode-button" type="button" data-tool="milk" aria-pressed="true">
+              <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h10l-1.5 5c2 1.6 3 3.7 3 6.2C20.5 20.8 17.7 24 14 24s-6.5-3.2-6.5-7.8c0-2.5 1-4.6 3-6.2L9 5Z"/><path d="M8 8h12M11 16h6"/></svg>
+              <span>奶泡笔</span>
+            </button>
+            <button class="mode-button" type="button" data-tool="pin" aria-pressed="false">
+              <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 23 12-12 3-6-6 3L5 20l3 3Z"/><path d="m15.8 7.2 5 5M8 20l-3 6 6-3"/></svg>
+              <span>雕花针</span>
+            </button>
+          </div>
+
+          <div class="range-row">
+            <span class="tool-label" id="sizeLabel">奶泡粗细</span>
+            <output class="range-value" id="sizeValue" for="sizeRange">46</output>
+          </div>
+          <input class="tool-range" id="sizeRange" type="range" min="16" max="88" value="46" step="1" aria-labelledby="sizeLabel">
+
+          <label class="auto-snap" for="autoSnapToggle">
+            <input id="autoSnapToggle" type="checkbox" checked>
+            <span class="snap-switch" aria-hidden="true"></span>
+            <span class="snap-copy">
+              <strong>图案自动吸附</strong>
+              <small id="snapHint">雕花针松手后自动修整</small>
+            </span>
+            <span class="snap-state" id="snapState">ON</span>
+          </label>
+
+          <span class="tool-label color-label">奶泡小口味</span>
+          <div class="colors" aria-label="奶泡颜色">
+            <button class="swatch" type="button" data-color="vanilla" data-name="香草" aria-label="香草奶泡" aria-pressed="true" style="--swatch:#fff7e2"></button>
+            <button class="swatch" type="button" data-color="rose" data-name="玫瑰" aria-label="玫瑰奶泡" aria-pressed="false" style="--swatch:#f1c3bc"></button>
+            <button class="swatch" type="button" data-color="matcha" data-name="抹茶" aria-label="抹茶奶泡" aria-pressed="false" style="--swatch:#c9d3a0"></button>
+            <button class="swatch" type="button" data-color="caramel" data-name="焦糖" aria-label="焦糖奶泡" aria-pressed="false" style="--swatch:#d9a266"></button>
+          </div>
+
+          <div class="button-row">
+            <button class="action-button" id="undoButton" type="button" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4"/><path d="M5 12h8a6 6 0 0 1 6 6"/></svg>
+              撤销
+            </button>
+            <button class="action-button" id="clearButton" type="button" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+              换一杯
+            </button>
+          </div>
+
+          <button class="save-button" id="saveButton" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12.5" r="3.6"/><path d="M8 5 9.5 3h5L16 5"/></svg>
+            完成 · 出杯评分
+          </button>
+          <p class="micro-note">雕花针会按选中的模板自动修整 · 画作只留在你的设备里</p>
+        </section>
+
+        <div class="sticker" aria-hidden="true">TAKE<br>YOUR<br>TIME<br>♡</div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose" type="button" aria-label="关闭作品预览">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+      <h2 class="sr-only" id="resultTitle" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">你的拉花作品</h2>
+      <div class="result-frame">
+        <img id="resultImage" alt="你的拉花作品预览">
+        <div class="result-caption">
+          <span>MY LITTLE LATTE</span>
+          <span id="resultDate"></span>
+        </div>
+      </div>
+      <div class="score-panel" aria-live="polite">
+        <div class="score-head">
+          <div class="score-rating">
+            <span class="score-stars" id="scoreStars" aria-label="获得零颗星">☆☆☆</span>
+            <span class="score-title" id="scoreTitle">等待出杯</span>
+          </div>
+          <div class="score-number"><strong id="scoreValue">0</strong><small>/ 100</small></div>
+        </div>
+        <p class="score-copy" id="scoreCopy">这杯咖啡还在等你的第一笔奶泡。</p>
+        <div class="score-metrics">
+          <div class="score-metric">
+            <div class="score-metric-head"><span>饱满度</span><span id="scoreCoverageValue">0</span></div>
+            <div class="score-track"><div class="score-fill" id="scoreCoverageBar"></div></div>
+          </div>
+          <div class="score-metric">
+            <div class="score-metric-head"><span>平衡感</span><span id="scoreBalanceValue">0</span></div>
+            <div class="score-track"><div class="score-fill" id="scoreBalanceBar"></div></div>
+          </div>
+          <div class="score-metric">
+            <div class="score-metric-head"><span>图案感</span><span id="scorePatternValue">0</span></div>
+            <div class="score-track"><div class="score-fill" id="scorePatternBar"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary" id="continueButton" type="button">继续雕花</button>
+        <button class="primary" id="downloadButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>
+          <span id="downloadLabel">保存到相册</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
